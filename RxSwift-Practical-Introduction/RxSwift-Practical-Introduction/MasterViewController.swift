@@ -6,30 +6,34 @@
 //
 
 import UIKit
-
+import RxSwift
 class MasterViewController: UIViewController {
   
   @IBOutlet weak var greetingsLabel: UILabel!
+  
+  // Manage the memory ARC or cancel a subscription you can do that by calling dispose on it
+  let disposeBag = DisposeBag()
   
   override func viewDidLoad() {
     super.viewDidLoad()
   }
   
-  
   @IBAction func selectCharacter(_ sender: Any) {
-    
     if let detailVC = storyboard?.instantiateViewController(withIdentifier: "DetailViewController") as? DetailViewController{
-      detailVC.delegate = self
+      
+      /*
+       Everytime selectedCharacter changes I will be notifying and I can make some updates
+       */
+      detailVC.selectedCharacter
+        .subscribe(onNext: { [weak self] strResult in
+          self?.greetingsLabel.text = strResult
+        })  // // Adding the Subscription to a Dispose Bag
+        .disposed(by: disposeBag)
+      
+      
       navigationController?.pushViewController(detailVC,
                                                animated: true)
-
     }
   }
   
-}
-
-extension MasterViewController: CharacterDelegate{
-  func didSelectCharacter(_ name: String) {
-    self.greetingsLabel.text = "Hello \(name)"
-  }
 }
